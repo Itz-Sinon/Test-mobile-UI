@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Countdown + PiP Demo</title>
+</head>
+<body>
+  <h2>⏱ Countdown + PiP</h2>
+
+  <video
+    id="video"
+    width="300"
+    controls
+    playsinline
+  >
+    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+  </video>
+
+  <p id="time">--:--</p>
+
+  <button onclick="start()">▶ Bắt đầu đếm 1 phút</button>
+
+<script>
+let endTime;
+
+// đăng ký service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+
+// xin quyền notification
+Notification.requestPermission();
+
+function start() {
+  endTime = Date.now() + 60 * 1000;
+  tick();
+}
+
+function tick() {
+  const remain = endTime - Date.now();
+  if (remain <= 0) {
+    document.getElementById("time").innerText = "⏰ Hết giờ";
+    return;
+  }
+
+  const s = Math.floor(remain / 1000);
+  document.getElementById("time").innerText = `⏱ Còn ${s}s`;
+
+  setTimeout(tick, 1000);
+}
+
+// khi user rời tab
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && endTime) {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.showNotification("Countdown đang chạy", {
+        body: document.getElementById("time").innerText,
+        tag: "countdown",
+        renotify: true,
+        icon: "https://cdn-icons-png.flaticon.com/512/727/727399.png"
+      });
+    });
+  }
+});
+</script>
+</body>
+</html>
